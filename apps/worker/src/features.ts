@@ -38,7 +38,7 @@ export function getFeatures(config: AppConfig): Features {
   
   // Email-dependent features
   const canSendEmails = hasMailgun;
-  const enableCollaborators = hasMailgun; // Collaborators need email for invites
+  const enableCollaborators = true; // Collaborators need email for invites
   
   // Environment flags
   const isDevelopment = config.environment === 'development';

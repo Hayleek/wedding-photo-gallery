@@ -14,21 +14,37 @@ interface UploadPanelProps {
 const UploadPanel: React.FC<UploadPanelProps> = ({ slug, onUploadsComplete }) => {
   const {
     isDragging,
-    hasActiveUploads,
-    totalCount,
+    completedCount,
     handleDragOver,
     handleDragLeave,
     handleDrop,
   } = useUpload(slug);
 
-  // Notify parent when all uploads complete
-  const prevActiveRef = React.useRef(hasActiveUploads);
+  // Remember how many uploads had completed on the previous render.
+  // This is more reliable than watching active -> idle because the panel
+  // can mount after an upload has already started or completed.
+  const previousCompletedCountRef = React.useRef(completedCount);
+
   React.useEffect(() => {
-    if (prevActiveRef.current && !hasActiveUploads && totalCount > 0 && onUploadsComplete) {
+    if (!onUploadsComplete) return;
+
+    const previousCompletedCount = previousCompletedCountRef.current;
+
+    if (completedCount > previousCompletedCount) {
+      console.log('📸 Upload completed — refreshing gallery');
+
       onUploadsComplete();
+
+      // Refresh again shortly after completion in case the preview
+      // becomes available a moment later.
+      window.setTimeout(() => {
+        onUploadsComplete();
+      }, 1500);
     }
-    prevActiveRef.current = hasActiveUploads;
-  }, [hasActiveUploads, totalCount, onUploadsComplete]);
+
+    previousCompletedCountRef.current = completedCount;
+  }, [completedCount, onUploadsComplete]);
+ 
 
   return (
     <>

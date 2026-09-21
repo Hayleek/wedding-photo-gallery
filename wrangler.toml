@@ -16,13 +16,13 @@ crons = ["0 * * * *"]
 # D1 Database binding
 [[d1_databases]]
 binding = "DB"
-database_name = "photos-db"
-database_id = "45a56052-5385-463d-bc79-7ddc20307f53" # Replace with your database_id
+database_name = "photos-db-local"
+database_id = "ddcffc82-21c0-4bd4-bbc3-e11e49e3d074"
 
 # R2 Storage binding
 [[r2_buckets]]
 binding = "PHOTOS_BUCKET"
-bucket_name = "photos-storage"
+bucket_name = "haylee-kent-wedding"
 
 # Workers AI binding — used ONLY for a batch-limited enrichment cron
 # (caption/tags/embedding generation for search, see scheduled.ts
@@ -65,22 +65,15 @@ name = "photos-worker-dev"
 # Update routes to match your domain
 [env.production]
 name = "photos-worker"
-# IMPORTANT: Update these routes to match your APP_DOMAIN
-# Example: { pattern = "photos.yourdomain.com/api/*", zone_name = "yourdomain.com" }
-routes = [
-  { pattern = "photos.thijsvtol.nl/api/*", zone_name = "thijsvtol.nl" },
-  { pattern = "photos.thijsvtol.nl/media/*", zone_name = "thijsvtol.nl" },
-  { pattern = "photos.thijsvtol.nl/sitemap.xml", zone_name = "thijsvtol.nl" },
-  { pattern = "photos.thijsvtol.nl/robots.txt", zone_name = "thijsvtol.nl" }
-]
+workers_dev = true
 
 [env.production.vars]
 ENVIRONMENT = "production"
-APP_NAME = "Thijs van Tol Photos"
-BRAND_NAME = "Thijs van Tol"
-COPYRIGHT_HOLDER = "Thijs van Tol"
-APP_DOMAIN = "photos.thijsvtol.nl"
-CONTACT_EMAIL = "info@thijsvtol.nl"
+APP_NAME = "Haylee & Kent"
+BRAND_NAME = "Haylee & Kent"
+COPYRIGHT_HOLDER = "Haylee & Kent"
+APP_DOMAIN = "photos-worker.hh0412.workers.dev"
+CONTACT_EMAIL = "contact@example.com"
 GA_MEASUREMENT_ID = "G-PLACEHOLDER"
 
 [env.production.triggers]
@@ -88,17 +81,13 @@ crons = ["0 * * * *"]
 
 [[env.production.d1_databases]]
 binding = "DB"
-database_name = "photos-db"
-database_id = "45a56052-5385-463d-bc79-7ddc20307f53"
+database_name = "photos-db-local"
+database_id = "ddcffc82-21c0-4bd4-bbc3-e11e49e3d074"
 
 [[env.production.r2_buckets]]
 binding = "PHOTOS_BUCKET"
-bucket_name = "photos-storage"
+bucket_name = "haylee-kent-wedding"
 
-# Workers AI binding. MUST be repeated here: named environments do NOT inherit
-# the top-level [ai] binding, so without this env.AI is undefined in production
-# and runAiEnrichment() silently early-returns every cron tick — leaving every
-# photo's ai_caption/embedding NULL (search-by-description finds nothing).
 [env.production.ai]
 binding = "AI"
 

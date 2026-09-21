@@ -73,7 +73,7 @@ const FTS_CANDIDATE_LIMIT = 1000;
 
 // CORS configuration for same-origin requests
 app.use('/*', cors({
-  origin: '*',
+  origin: 'https://haylee-kent-wedding.hh0412.workers.dev',
   credentials: true,
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Admin-Access'],

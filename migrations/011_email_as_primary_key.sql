@@ -47,36 +47,11 @@ SELECT ec.event_id, u.email, ec.invited_at
 FROM event_collaborators ec
 JOIN users u ON ec.user_id = u.id;
 
--- Step 7: Create new collaboration_history table with email references
-CREATE TABLE collaboration_history_new (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  event_id INTEGER NOT NULL,
-  user_email TEXT NOT NULL,
-  action_type TEXT NOT NULL CHECK(action_type IN ('invite', 'accept', 'decline', 'remove', 'upload')),
-  target_user_email TEXT,
-  metadata TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
-  FOREIGN KEY (user_email) REFERENCES users_new(email) ON DELETE CASCADE,
-  FOREIGN KEY (target_user_email) REFERENCES users_new(email) ON DELETE SET NULL
-);
-
--- Step 8: Copy history using emails
-INSERT INTO collaboration_history_new (id, event_id, user_email, action_type, target_user_email, metadata, created_at)
-SELECT 
-  ch.id,
-  ch.event_id,
-  u1.email,
-  ch.action_type,
-  u2.email,
-  ch.metadata,
-  ch.created_at
-FROM collaboration_history ch
-JOIN users u1 ON ch.user_id = u1.id
-LEFT JOIN users u2 ON ch.target_user_id = u2.id;
+-- Steps 7-8 skipped:
+-- collaboration_history already uses user_email and target_user_email
+-- since migration 010.
 
 -- Step 9: Drop old tables
-DROP TABLE collaboration_history;
 DROP TABLE event_collaborators;
 DROP TABLE user_favorites;
 DROP INDEX IF EXISTS idx_user_favorites_user;
@@ -88,13 +63,12 @@ DROP TABLE users;
 ALTER TABLE users_new RENAME TO users;
 ALTER TABLE user_favorites_new RENAME TO user_favorites;
 ALTER TABLE event_collaborators_new RENAME TO event_collaborators;
-ALTER TABLE collaboration_history_new RENAME TO collaboration_history;
 
 -- Step 11: Recreate indexes with new structure
 CREATE INDEX idx_user_favorites_user ON user_favorites(user_email, created_at DESC);
 CREATE INDEX idx_user_favorites_photo ON user_favorites(photo_id);
 CREATE INDEX idx_event_collaborators_email ON event_collaborators(user_email);
-CREATE INDEX idx_collaboration_history_event ON collaboration_history(event_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_collaboration_history_event ON collaboration_history(event_id, created_at DESC);
 
 -- Note: photos.uploaded_by should also reference email now, but if it was never deployed,
 -- we don't need to migrate it. The migration 009 will need to be updated.

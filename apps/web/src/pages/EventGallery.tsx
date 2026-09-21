@@ -112,7 +112,7 @@ const EventGallery: React.FC = () => {
   const duplicatePhotoCount = duplicateGroups.reduce((sum, group) => sum + group.length - 1, 0);
 
   // Upload hook for drag-drop
-  const { handleDragOver, handleDragLeave, handleDrop, handleFileInput, queueItems } = useUpload(slug);
+  const { handleDragOver, handleDragLeave, handleDrop, handleFileInput } = useUpload(slug);
 
   // Use custom hook for photo selection
   const {
@@ -276,6 +276,8 @@ const EventGallery: React.FC = () => {
       if (!eventData.requires_password) {
         try {
           const photoData = await getPhotos(slug!, sortBy, Array.from(peopleFilterIds));
+          console.log('📸 GALLERY RECEIVED:', photoData.length, photoData);
+
           setPhotos(photoData);
           if (isUnfilteredListing) void cacheEventPhotos(slug!, photoData);
           setAuthenticated(true);
@@ -321,15 +323,44 @@ const EventGallery: React.FC = () => {
    * cache. Reading is gated the same way: showing a cached full set while a
    * filter is active would render photos the filter excludes.
    */
+
+
+   /**
+   * True only for an unfiltered listing, i.e. the complete set of photos for this
+   * event.
+   *
+   * cacheEventPhotos() deletes any cached row the response doesn't contain, so
+   * handing it a people-filtered subset would wipe every other photo from the
+   * cache. Reading is gated the same way: showing a cached full set while a
+   * filter is active would render photos the filter excludes.
+   */
   const isUnfilteredListing = peopleFilterIds.size === 0;
 
   const loadPhotos = async () => {
+    console.log('🔄 loadPhotos CALLED');
+
     try {
-      const photoData = await getPhotos(slug!, sortBy, Array.from(peopleFilterIds));
+      const photoData = await getPhotos(
+        slug!,
+        sortBy,
+        Array.from(peopleFilterIds)
+      );
+      console.log('📸 GALLERY loadPhotos RECEIVED:', photoData.length, photoData);
+
       setPhotos(photoData);
-      if (isUnfilteredListing) void cacheEventPhotos(slug!, photoData);
+console.log(
+  '📸 AFTER SET:',
+  photoData.map(p => ({
+    id: p.id,
+    filename: p.original_filename,
+    uploaded: p.uploaded_at
+  }))
+);
+      if (isUnfilteredListing) {
+        void cacheEventPhotos(slug!, photoData);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load photos:', err);
     }
   };
 
@@ -339,50 +370,40 @@ const EventGallery: React.FC = () => {
     }
   };
 
-  // Auto-refresh the gallery as soon as any upload for this event finishes,
-  // instead of only refetching once the *entire* batch is done. This fixes
-  // two related bugs:
-  //  - Videos (and photos) not appearing until a manual page refresh: the
-  //    previous approach only refetched on a "some active -> none active"
-  //    edge detected inside <UploadPanel>, which is missed entirely if this
-  //    component (re)mounts after uploads already completed (e.g. the user
-  //    navigated away mid-upload and came back, or uploads finished via the
-  //    native background-sync pipeline while this page wasn't mounted).
-  //  - A slow item in a mixed batch (e.g. a large video) delaying the
-  //    appearance of already-finished photos, since the old logic only
-  //    fired once every item was done.
-  // Comparing against a ref (not state) means every *newly seen* completed
-  // item — including ones already completed at mount — triggers exactly one
-  // refetch, so the gallery is always eventually consistent with the queue.
-  const seenCompletedUploadIdsRef = useRef<Set<string>>(new Set());
+    // Keep the gallery in sync with uploads.
+  // Do not depend on queueItems here because completed uploads may
+  // disappear from the local queue before this component sees them.
   useEffect(() => {
-    if (!authenticated) return;
-    const completedIds = queueItems
-      .filter((item) => item.status === 'completed')
-      .map((item) => item.id);
-    const hasNewlyCompleted = completedIds.some(
-      (id) => !seenCompletedUploadIdsRef.current.has(id)
-    );
-    // Rebuild the tracked set from the current queue on every run (instead
-    // of only adding to it) so it can't grow unbounded across a long-lived
-    // session — items the manager has since purged (e.g. via
-    // clearCompleted()) are dropped rather than retained forever.
-    seenCompletedUploadIdsRef.current = new Set(completedIds);
-    if (hasNewlyCompleted) {
-      loadPhotos();
-    }
-    // `loadPhotos` intentionally omitted: it's a plain (non-memoized) async
-    // function redefined every render, and it doesn't need to be in the
-    // dependency array — this effect should only re-run when the upload
-    // queue or auth state changes, not on every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queueItems, authenticated]);
+    if (!authenticated || !slug) return;
 
-  // Reload photos when sort or people filter changes
+    console.log('🔄 Gallery auto-refresh started');
+
+   const refresh = () => {
+    console.log('🔄 Checking gallery for newly uploaded photos');
+    void loadPhotos();
+  };
+
+    // Check immediately.
+    refresh();
+
+    // Then check every 1.5 seconds.
+    const intervalId = window.setInterval(refresh, 1500);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+
+    // loadPhotos is intentionally omitted because it is recreated on render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticated, slug]);
+
+  // Reload photos when sort or people filter changes.
   useEffect(() => {
     if (authenticated && slug) {
-      loadPhotos();
+      void loadPhotos();
     }
+
+    // loadPhotos is intentionally omitted because it is recreated on render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy, peopleFilterIds]);
 
@@ -1808,6 +1829,7 @@ const EventGallery: React.FC = () => {
                   
                   {/* Photos for this date - Justified Grid */}
                   <JustifiedGrid
+                     key={`${date}-${datePhotos.length}`}
                     photos={datePhotos}
                     slug={slug!}
                     targetRowHeight={targetRowHeight}

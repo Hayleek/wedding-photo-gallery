@@ -16,7 +16,9 @@ CREATE TABLE IF NOT EXISTS events (
     password_salt TEXT,
     password_hash TEXT,
     inferred_date TEXT, -- YYYY-MM-DD format
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    description TEXT,
+    is_archived BOOLEAN DEFAULT 0
 );
 
 -- Restore data

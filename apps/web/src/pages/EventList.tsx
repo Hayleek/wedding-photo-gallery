@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Calendar, Filter, X, ChevronDown, ChevronUp, Search, Plus, MapPin } from 'lucide-react';
+import { Calendar, X, ChevronDown, ChevronUp, Search, Plus, MapPin } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { EventListSkeleton } from '../components/Skeletons';
@@ -19,13 +19,14 @@ const EventList: React.FC = () => {
   const isAdmin = user?.isAdmin === true;
   const [events, setEvents] = useState<Event[]>([]);
   const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [, setTags] = useState<Tag[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [tags, setTags] = useState<Tag[]>([]);
+
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showTagFilters, setShowTagFilters] = useState(false);
+ 
   const [showCityFilters, setShowCityFilters] = useState(false);
   const [showAllCities, setShowAllCities] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -213,47 +214,7 @@ const EventList: React.FC = () => {
           )}
         </div>
 
-        {/* Tag filters */}
-        {tags.length > 0 && (
-          <div className="mb-4 sm:mb-6">
-            <button
-              onClick={() => setShowTagFilters(!showTagFilters)}
-              className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 hover:text-gray-900 dark:hover:text-white transition"
-            >
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4" />
-                Filter by Tag
-                {selectedTag && <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">1</span>}
-              </div>
-              {showTagFilters ? <ChevronUp className="w-4 h-4 sm:hidden" /> : <ChevronDown className="w-4 h-4 sm:hidden" />}
-            </button>
-            <div className={`flex flex-wrap gap-1.5 sm:gap-2 ${!showTagFilters ? 'hidden sm:flex' : ''}`}>
-              <button
-                onClick={() => filterByTag(null)}
-                className={`px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all active:scale-95 ${
-                  !selectedTag
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                }`}
-              >
-                All Tags
-              </button>
-              {tags.map((tag) => (
-                <button
-                  key={tag.id}
-                  onClick={() => filterByTag(tag.slug)}
-                  className={`px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all active:scale-95 ${
-                    selectedTag === tag.slug
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  {tag.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+       
 
         {/* City filters */}
         {(() => {

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, Heart, MapPin, Loader2 } from 'lucide-react';
-import ContactForm from '../components/ContactForm';
-import Footer from '../components/Footer';
+import { Loader2 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useRefresh } from '../contexts/RefreshContext';
 import { getFeaturedPhotos, getPreviewUrl } from '../api';
@@ -50,7 +48,6 @@ export default function Landing() {
   const [currentSlide, setCurrentSlide] = useState(0);
   // Only show the loading spinner when we have nothing cached to display.
   const [loading, setLoading] = useState(() => readCachedFeatured().length === 0);
-  const [scrollY, setScrollY] = useState(0);
 
   const loadFeaturedPhotos = async () => {
     try {
@@ -99,14 +96,6 @@ export default function Landing() {
     return () => clearInterval(interval);
   }, [featuredPhotos.length]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const config = getConfig();
   
@@ -177,65 +166,28 @@ export default function Landing() {
                 </div>
               ))}
             </>
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-white text-xl">No featured photos available</div>
-            </div>
-          )}
+         ) : null}
           
           {/* Hero Text Overlay */}
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/50">
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 text-center px-4 drop-shadow-2xl">
               {config.brandName}
-            </h1>
-            <p className="text-xl md:text-2xl text-white mb-8 text-center px-4 drop-shadow-lg">
-              Capturing moments in sports and nature
-            </p>
+            </h1> <p className="text-lg md:text-xl text-white/90 mb-8 text-center px-6 max-w-xl">
+  Thank you for celebrating with us and sharing your memories from our day.
+</p>
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 w-full max-w-2xl px-4">
               <Link
                 to="/events"
                 className="bg-white/90 backdrop-blur-sm text-gray-900 px-6 sm:px-8 py-4 rounded-xl text-base sm:text-lg font-semibold hover:bg-white active:scale-95 transition-all text-center flex-1 shadow-lg"
               >
-                View Galleries
-              </Link>
-              <Link
-                to="/favorites"
-                className="bg-white/20 backdrop-blur-sm border-2 border-white/40 text-white px-6 sm:px-8 py-4 rounded-xl text-base sm:text-lg font-semibold hover:bg-white/30 active:scale-95 transition-all flex items-center justify-center gap-2 flex-1 shadow-lg"
-              >
-                <Heart className="w-5 h-5" aria-hidden="true" /> <span>Favorites</span>
-              </Link>
-              <Link
-                to="/map"
-                className="bg-white/20 backdrop-blur-sm border-2 border-white/40 text-white px-6 sm:px-8 py-4 rounded-xl text-base sm:text-lg font-semibold hover:bg-white/30 active:scale-95 transition-all flex items-center justify-center gap-2 flex-1 shadow-lg"
-              >
-                <MapPin className="w-5 h-5" aria-hidden="true" /> <span>Map</span>
+                Share your photos
               </Link>
             </div>
           </div>
-          
-          {/* Scroll indicator */}
-          <div 
-            className="absolute bottom-8 left-0 right-0 flex flex-col items-center animate-bounce z-20 transition-opacity duration-300"
-            style={{ opacity: Math.max(0, 1 - scrollY / 300) }}
-            aria-hidden="true"
-          >
-            <span className="text-white text-sm mb-2 drop-shadow-lg">Scroll to explore</span>
-            <ChevronDown className="w-8 h-8 text-white drop-shadow-lg" />
-          </div>
-        </section>
+          </section>
+</main>
 
-        {/* Contact Section */}
-        <section className="bg-white dark:bg-gray-800 py-16" aria-label="Contact">
-          <div className="max-w-4xl mx-auto px-4">
-            <h2 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">Get in Touch</h2>
-            
-            <ContactForm formId="xdalnwpj" />
-
-          </div>
-        </section>
-      </main>
-
-      <Footer />
+  
     </div>
   );
 }

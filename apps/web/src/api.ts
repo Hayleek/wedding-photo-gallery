@@ -1003,7 +1003,9 @@ export const getPreviewUrl = (slug: string, photoId: string, fileType?: string, 
     return `${domain}${pathWithVersion}`;
   }
   
-  return pathWithVersion;
+  const apiUrl = import.meta.env.VITE_API_URL || '/api';
+  const mediaOrigin = apiUrl.startsWith('http') ? new URL(apiUrl).origin : '';
+  return `${mediaOrigin}${pathWithVersion}`;
 };
 
 export const getOriginalUrl = (slug: string, photoId: string, fileType?: string, cacheVersion?: number): string => {
@@ -1035,7 +1037,9 @@ export const getOriginalUrl = (slug: string, photoId: string, fileType?: string,
     return `${domain}${pathWithVersion}`;
   }
 
-  return pathWithVersion;
+  const apiUrl = import.meta.env.VITE_API_URL || '/api';
+  const mediaOrigin = apiUrl.startsWith('http') ? new URL(apiUrl).origin : '';
+  return `${mediaOrigin}${pathWithVersion}`;
 };
 
 /**
@@ -1064,7 +1068,9 @@ export const getVideoPosterUrl = (slug: string, photoId: string, cacheVersion?: 
     return `${domain}${pathWithVersion}`;
   }
 
-  return pathWithVersion;
+  const apiUrl = import.meta.env.VITE_API_URL || '/api';
+  const mediaOrigin = apiUrl.startsWith('http') ? new URL(apiUrl).origin : '';
+  return `${mediaOrigin}${pathWithVersion}`;
 };
 
 /**

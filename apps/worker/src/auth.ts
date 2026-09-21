@@ -14,7 +14,19 @@ type Variables = {
  * Also supports Bearer tokens for mobile OAuth
  */
 export async function extractUser(c: Context<{ Bindings: Env; Variables: Variables }>): Promise<User | null> {
-  try {
+  try {    
+     // Development only: use the configured admin email as a local test user
+    if (c.env.ENVIRONMENT === 'development') {
+      const adminEmail = (c.env.ADMIN_EMAILS || '').split(',')[0]?.trim();
+
+      if (adminEmail) {
+        return {
+          id: 'local-dev-admin',
+          email: adminEmail,
+          name: 'Haylee',
+        };
+      }
+    }
     // First check for Bearer token (mobile OAuth)
     const authHeader = c.req.header('Authorization');
     if (authHeader?.startsWith('Bearer ')) {

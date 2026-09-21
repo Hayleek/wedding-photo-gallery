@@ -55,6 +55,7 @@ app.use('/*', async (c, next) => {
 app.use('/*', async (c, next) => {
   const config = getConfig(c.env);
   const allowedOrigins = [
+    'https://haylee-kent-wedding.hh0412.workers.dev',
     `https://${config.domain}`,
     'https://localhost',      // Capacitor Android
     'capacitor://localhost',  // Capacitor iOS
