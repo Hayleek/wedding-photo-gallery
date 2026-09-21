@@ -530,8 +530,18 @@ export async function requireEventViewAccess(c: Context<{ Bindings: Env; Variabl
  */
 export async function requireUploadPermission(c: Context<{ Bindings: Env; Variables: Variables }>, next: Next) {
   const user = await extractUser(c);
-  
+
   const log = createLogger(c.env);
+  const eventSlug = c.req.param('slug');
+
+  // Allow guests to upload to the public Haylee & Kent wedding gallery.
+  // Admin and collaborator permissions below remain unchanged for all other events.
+  if (!user && eventSlug === 'haylee-kent-wedding') {
+    log.debug('Guest upload access granted for event:', eventSlug);
+    await next();
+    return;
+  }
+
   if (!user) {
     log.debug('Upload access denied - no user found');
     return c.json({ error: 'Authentication required' }, 401);
@@ -549,7 +559,6 @@ export async function requireUploadPermission(c: Context<{ Bindings: Env; Variab
   }
 
   // Check if user has upload capability on this specific event
-  const eventSlug = c.req.param('slug');
   if (eventSlug && await hasEventCapability(c.env.DB, eventSlug, user.email, 'upload')) {
     log.debug('Upload access granted (collaborator):', user.email, 'for event:', eventSlug);
     await next();

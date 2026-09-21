@@ -88,7 +88,7 @@ const EventGallery: React.FC = () => {
    *  effect for why (the photo list arrives twice: cache, then network). Null when
    *  no restore is pending. */
   const restoreTargetRef = useRef<{ scrollY: number; photoId: string | null } | null>(null);
-  const canUpload = isAdmin || collaboratorRole === 'uploader' || collaboratorRole === 'editor' || collaboratorRole === 'admin';
+  const canUpload = slug === 'haylee-kent-wedding' || isAdmin || collaboratorRole === 'uploader' || collaboratorRole === 'editor' || collaboratorRole === 'admin';
   const canDelete = isAdmin || collaboratorRole === 'editor' || collaboratorRole === 'admin';
   const canCreateInvite = isAdmin || collaboratorRole === 'editor' || collaboratorRole === 'admin';
   const canFeature = isAdmin || collaboratorRole === 'admin';
